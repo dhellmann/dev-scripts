@@ -94,7 +94,7 @@ controlPlane:
     baremetal: {}
 platform:
   baremetal:
-    libvirtURI: qemu+ssh://dell008/system
+    libvirtURI: qemu+ssh://10.1.8.90/system
     dnsVIP: ${DNS_VIP}
     hosts:
 $(master_node_map_to_install_config $NUM_MASTERS)
