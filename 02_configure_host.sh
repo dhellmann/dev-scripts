@@ -163,7 +163,7 @@ if [ "$MANAGE_BR_BRIDGE" == "y" ] ; then
     echo "server=$ADDN_DNS" | sudo tee /etc/NetworkManager/dnsmasq.d/upstream.conf
   fi
   if systemctl is-active --quiet NetworkManager; then
-    sudo systemctl reload NetworkManager
+    sudo systemctl restart NetworkManager
   else
     sudo systemctl restart NetworkManager
   fi
