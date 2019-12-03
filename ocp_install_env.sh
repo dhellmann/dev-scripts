@@ -96,6 +96,8 @@ platform:
   baremetal:
     libvirtURI: qemu+ssh://10.1.8.90/system
     dnsVIP: ${DNS_VIP}
+    apiVIP: ${API_VIP}
+    ingressVIP: ${INGRESS_VIP}
     hosts:
 $(master_node_map_to_install_config $NUM_MASTERS)
 pullSecret: |
