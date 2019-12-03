@@ -94,7 +94,7 @@ controlPlane:
     baremetal: {}
 platform:
   baremetal:
-    libvirtURI: qemu+ssh://10.1.8.90/system
+    libvirtURI: qemu+ssh://dhellmann@10.1.8.90/system
     dnsVIP: ${DNS_VIP}
     apiVIP: ${API_VIP}
     ingressVIP: ${INGRESS_VIP}
