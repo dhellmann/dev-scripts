@@ -51,7 +51,8 @@ function create_cluster() {
     cp -rf assets/generated/*.yaml ${assets_dir}/openshift
 
     cp ${assets_dir}/install-config.yaml{.tmp,}
-    $OPENSHIFT_INSTALLER --dir "${assets_dir}" --log-level=debug create cluster
+    echo $OPENSHIFT_INSTALLER --dir "${assets_dir}" --log-level=debug create cluster
+    exit 1
 }
 
 function wait_for_json() {
