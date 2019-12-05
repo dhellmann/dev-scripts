@@ -47,16 +47,16 @@ if [ "$TEST_CUSTOM_MAO" = true ]; then
 fi
 
 list_workers | make_bm_workers | tee $SCRIPTDIR/ocp/worker_crs.yaml
-if test ${NUM_WORKERS} -gt 0 ; then
-    # TODO - remove this once we set worker replicas to ${NUM_WORKERS} in
-    # install-config, which will be after the machine-api-operator can deploy the
-    # baremetal-operator
-    oc scale machineset -n openshift-machine-api ${CLUSTER_NAME}-worker-0 --replicas=${NUM_WORKERS}
+# if test ${NUM_WORKERS} -gt 0 ; then
+#     # TODO - remove this once we set worker replicas to ${NUM_WORKERS} in
+#     # install-config, which will be after the machine-api-operator can deploy the
+#     # baremetal-operator
+#     oc scale machineset -n openshift-machine-api ${CLUSTER_NAME}-worker-0 --replicas=${NUM_WORKERS}
 
-    # Run the fix_certs.sh script periodically as a workaround for
-    # https://github.com/openshift-metalkube/dev-scripts/issues/260
-    sudo systemd-run --on-active=30s --on-unit-active=1m --unit=fix_certs.service $(dirname $0)/fix_certs.sh
-fi
+#     # Run the fix_certs.sh script periodically as a workaround for
+#     # https://github.com/openshift-metalkube/dev-scripts/issues/260
+#     sudo systemd-run --on-active=30s --on-unit-active=1m --unit=fix_certs.service $(dirname $0)/fix_certs.sh
+# fi
 
 # Check if file exists
 [ -s "$SCRIPTDIR/ocp/worker_crs.yaml" ] || exit 0
