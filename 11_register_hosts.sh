@@ -61,4 +61,4 @@ fi
 # Check if file exists
 [ -s "$SCRIPTDIR/ocp/worker_crs.yaml" ] || exit 0
 
-oc --config ocp/auth/kubeconfig apply -f $SCRIPTDIR/ocp/worker_crs.yaml --namespace=openshift-machine-api
+#oc --config ocp/auth/kubeconfig apply -f $SCRIPTDIR/ocp/worker_crs.yaml --namespace=openshift-machine-api
