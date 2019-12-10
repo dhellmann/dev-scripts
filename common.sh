@@ -96,6 +96,9 @@ MANAGE_INT_BRIDGE=${MANAGE_INT_BRIDGE:-y}
 INT_IF=${INT_IF:-}
 #Root disk to deploy coreOS - use /dev/sda on BM
 ROOT_DISK_NAME=${ROOT_DISK_NAME-"/dev/sda"}
+# Network bridge names
+PRO_BRIDGE_NAME=${PRO_BRIDGE_NAME:-provisioning}
+INT_BRIDGE_NAME=${INT_BRIDGE_NAME:-baremetal}
 
 FILESYSTEM=${FILESYSTEM:="/"}
 

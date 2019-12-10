@@ -25,16 +25,16 @@ sudo rm -rf /etc/NetworkManager/dnsmasq.d/openshift.conf /etc/NetworkManager/con
 # There was a bug in this file, it may need to be recreated.
 # delete the interface as it can cause issues when not rebooting
 if [ "$MANAGE_PRO_BRIDGE" == "y" ]; then
-    sudo ifdown provisioning || true
-    sudo ip link delete provisioning || true
-    sudo rm -f /etc/sysconfig/network-scripts/ifcfg-provisioning
+    sudo ifdown ${PRO_BRIDGE_NAME} || true
+    sudo ip link delete ${PRO_BRIDGE_NAME} || true
+    sudo rm -f /etc/sysconfig/network-scripts/ifcfg-${PRO_BRIDGE_NAME}
 fi
 # Leaving this around causes issues when the host is rebooted
 # delete the interface as it can cause issues when not rebooting
 if [ "$MANAGE_BR_BRIDGE" == "y" ]; then
-    sudo ifdown baremetal || true
-    sudo ip link delete baremetal || true
-    sudo rm -f /etc/sysconfig/network-scripts/ifcfg-baremetal
+    sudo ifdown ${INT_BRIDGE_NAME} || true
+    sudo ip link delete ${INT_BRIDGE_NAME} || true
+    sudo rm -f /etc/sysconfig/network-scripts/ifcfg-${INT_BRIDGE_NAME}
 fi
 # Kill any lingering proxy
 sudo pkill -f oc.*proxy

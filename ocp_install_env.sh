@@ -95,6 +95,8 @@ controlPlane:
 platform:
   baremetal:
     dnsVIP: ${DNS_VIP}
+    externalBridge: ${INT_BRIDGE_NAME}
+    provisioningBridge: ${PRO_BRIDGE_NAME}
     hosts:
 $(master_node_map_to_install_config $NUM_MASTERS)
 pullSecret: |
