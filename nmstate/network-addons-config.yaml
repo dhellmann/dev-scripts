@@ -1,0 +1,13 @@
+# via https://raw.githubusercontent.com/kubevirt/cluster-network-addons-operator/master/manifests/cluster-network-addons/0.24.0/network-addons-config-example.cr.yaml
+---
+apiVersion: networkaddonsoperator.network.kubevirt.io/v1alpha1
+kind: NetworkAddonsConfig
+metadata:
+  name: cluster
+spec:
+  #imagePullPolicy: IfNotPresent
+  #kubeMacPool: {}
+  linuxBridge: {}
+  multus: {}
+  nmstate: {}
+  #ovs: {}
