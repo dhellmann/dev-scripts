@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: network-test-hn
+  namespace: openshift-machine-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: network-test-hn
+  template:
+    metadata:
+      labels:
+        name: network-test-hn
+    spec:
+      hostNetwork: true
+      serviceAccount: machine-api-controllers
+      serviceAccountName: machine-api-controllers
+      containers:
+        - name: centos
+          image: centos
+          command: ['sleep', 'infinity']
+          env:
+            - name: EXPORTED_VAR
+              value: "testing the network"
