@@ -1,0 +1,30 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: network-test
+  labels:
+    name: network-test
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: network-test
+  namespace: network-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: network-test
+  template:
+    metadata:
+      labels:
+        name: network-test
+    spec:
+      containers:
+        - name: centos
+          image: centos
+          command: ['sleep', 'infinity']
+          env:
+            - name: EXPORTED_VAR
+              value: "testing the network"
