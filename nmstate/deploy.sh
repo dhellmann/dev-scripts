@@ -15,4 +15,6 @@ oc apply -f https://raw.githubusercontent.com/kubevirt/cluster-network-addons-op
 
 oc apply -f ${basedir}/network-addons-config.yaml -n cluster-network-addons
 
+oc apply -f ${basedir}/test_namespace.yaml
+
 oc wait networkaddonsconfig cluster --for condition=Available
