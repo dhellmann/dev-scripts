@@ -2,11 +2,11 @@
 apiVersion: nmstate.io/v1alpha1
 kind: NodeNetworkConfigurationPolicy
 metadata:
-  name: dbr-enp1s0-policy
+  name: br100-enp1s0-policy
 spec:
   desiredState:
     interfaces:
-      - name: dbr
+      - name: br100
         description: Linux bridge with enp1s0 as a port
         type: linux-bridge
         state: up
