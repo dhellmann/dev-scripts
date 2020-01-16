@@ -1,49 +1,4 @@
 ---
-apiVersion: nmstate.io/v1alpha1
-kind: NodeNetworkConfigurationPolicy
-metadata:
-  name: dbr-enp1s0-policy
-spec:
-  desiredState:
-    interfaces:
-      - name: dbr
-        description: Linux bridge with enp1s0 as a port
-        type: linux-bridge
-        state: up
-        ipv4:
-          dhcp: true
-          enabled: true
-        bridge:
-          options:
-            stp:
-              enabled: false
-          port:
-            - name: enp1s0
-
----
-apiVersion: "k8s.cni.cncf.io/v1"
-kind: NetworkAttachmentDefinition
-metadata:
-  name: dbr
-  annotations:
-    k8s.v1.cni.cncf.io/resourceName: bridge.network.kubevirt.io/dbr
-spec:
-  config: '{
-      "cniVersion": "0.3.1",
-      "type": "cnv-bridge",
-      "bridge": "dbr",
-      "vlan": 100,
-      "ipam": {}
-    }'
-
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: network-test
-  labels:
-    name: network-test
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -59,7 +14,7 @@ spec:
       labels:
         name: network-test
       annotations:
-        k8s.v1.cni.cncf.io/networks: dbr
+        k8s.v1.cni.cncf.io/networks: br100
     spec:
       containers:
         - name: centos
