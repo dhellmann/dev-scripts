@@ -14,7 +14,7 @@ spec:
       labels:
         name: network-test
       annotations:
-        k8s.v1.cni.cncf.io/networks: br100@provisioning
+        k8s.v1.cni.cncf.io/networks: brkni100@provisioning
     spec:
       containers:
         - name: centos
