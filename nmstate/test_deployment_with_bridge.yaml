@@ -18,8 +18,8 @@ spec:
     spec:
       containers:
         - name: centos
-          image: centos
-          command: ['sleep', 'infinity']
+          image: quay.io/dhellmann/centos-test-image
+          command: ['/show_details.sh']
           env:
             - name: EXPORTED_VAR
               value: "testing the network"
