@@ -19,6 +19,7 @@ spec:
       containers:
         - name: centos
           image: quay.io/dhellmann/centos-test-image
+          imagePullPolicy: Always
           command: ['/show_details.sh']
           env:
             - name: EXPORTED_VAR
