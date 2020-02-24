@@ -119,26 +119,26 @@ fi
 # Adding an IP address in the libvirt definition for this network results in
 # dnsmasq being run, we don't want that as we have our own dnsmasq, so set
 # the IP address here
-if [ ! -e /etc/sysconfig/network-scripts/ifcfg-hive1prov ] ; then
-    echo -e "DEVICE=hive1prov\nTYPE=Bridge\nONBOOT=yes\nNM_CONTROLLED=no\nBOOTPROTO=static\nIPADDR=$HIVE1_PROVISIONING_HOST_IP\nNETMASK=$HIVE1_PROVISIONING_NETMASK${ZONE}" | sudo dd of=/etc/sysconfig/network-scripts/ifcfg-hive1prov
+if [ ! -e /etc/sysconfig/network-scripts/ifcfg-${HIVE1_PROVISIONING_NETWORK_NAME} ] ; then
+    echo -e "DEVICE=${HIVE1_PROVISIONING_NETWORK_NAME}\nTYPE=Bridge\nONBOOT=yes\nNM_CONTROLLED=no\nBOOTPROTO=static\nIPADDR=$HIVE1_PROVISIONING_HOST_IP\nNETMASK=$HIVE1_PROVISIONING_NETMASK${ZONE}" | sudo dd of=/etc/sysconfig/network-scripts/ifcfg-${HIVE1_PROVISIONING_NETWORK_NAME}
 fi
-sudo ifdown hive1prov || true
-sudo ifup hive1prov
+sudo ifdown ${HIVE1_PROVISIONING_NETWORK_NAME} || true
+sudo ifup ${HIVE1_PROVISIONING_NETWORK_NAME}
 
-# Create the hive1bm bridge
-if [ ! -e /etc/sysconfig/network-scripts/ifcfg-hive1bm ] ; then
-    echo -e "DEVICE=hive1bm\nTYPE=Bridge\nONBOOT=yes\nNM_CONTROLLED=no${ZONE}" | sudo dd of=/etc/sysconfig/network-scripts/ifcfg-hive1bm
+# Create the bridge for the baremetal network
+if [ ! -e /etc/sysconfig/network-scripts/ifcfg-${HIVE1_BAREMETAL_NETWORK_NAME} ] ; then
+    echo -e "DEVICE=${HIVE1_BAREMETAL_NETWORK_NAME}\nTYPE=Bridge\nONBOOT=yes\nNM_CONTROLLED=no${ZONE}" | sudo dd of=/etc/sysconfig/network-scripts/ifcfg-${HIVE1_BAREMETAL_NETWORK_NAME}
 fi
-sudo ifdown hive1bm || true
-sudo ifup hive1bm
+sudo ifdown ${HIVE1_BAREMETAL_NETWORK_NAME} || true
+sudo ifup ${HIVE1_BAREMETAL_NETWORK_NAME}
 
 # If there were modifications to the /etc/sysconfig/network-scripts/ifcfg-*
 # files, it is required to enable the network service
 sudo systemctl enable network
 
 # restart the libvirt network so it applies an ip to the bridge
-sudo virsh net-destroy hive1bm
-sudo virsh net-start hive1bm
+sudo virsh net-destroy ${HIVE1_BAREMETAL_NETWORK_NAME}
+sudo virsh net-start ${HIVE1_BAREMETAL_NETWORK_NAME}
 
 # Add firewall rules to ensure the image caches can be reached on the host
 for PORT in 80 ${LOCAL_REGISTRY_PORT} ; do
@@ -146,11 +146,11 @@ for PORT in 80 ${LOCAL_REGISTRY_PORT} ; do
         sudo firewall-cmd --zone=libvirt --add-port=$PORT/tcp
         sudo firewall-cmd --zone=libvirt --add-port=$PORT/tcp --permanent
     else
-        if ! sudo iptables -C INPUT -i hive1prov -p tcp -m tcp --dport $PORT -j ACCEPT > /dev/null 2>&1; then
-            sudo iptables -I INPUT -i hive1prov -p tcp -m tcp --dport $PORT -j ACCEPT
+        if ! sudo iptables -C INPUT -i ${HIVE1_PROVISIONING_NETWORK_NAME} -p tcp -m tcp --dport $PORT -j ACCEPT > /dev/null 2>&1; then
+            sudo iptables -I INPUT -i ${HIVE1_PROVISIONING_NETWORK_NAME} -p tcp -m tcp --dport $PORT -j ACCEPT
         fi
-        if ! sudo iptables -C INPUT -i hive1bm -p tcp -m tcp --dport $PORT -j ACCEPT > /dev/null 2>&1; then
-            sudo iptables -I INPUT -i hive1bm -p tcp -m tcp --dport $PORT -j ACCEPT
+        if ! sudo iptables -C INPUT -i ${HIVE1_BAREMETAL_NETWORK_NAME} -p tcp -m tcp --dport $PORT -j ACCEPT > /dev/null 2>&1; then
+            sudo iptables -I INPUT -i ${HIVE1_BAREMETAL_NETWORK_NAME} -p tcp -m tcp --dport $PORT -j ACCEPT
         fi
     fi
 done
@@ -161,17 +161,17 @@ if [ "${RHEL8}" = "True" ] ; then
     sudo firewall-cmd --zone=libvirt --add-port=6230-${VBMC_MAX_PORT}/udp
     sudo firewall-cmd --zone=libvirt --add-port=6230-${VBMC_MAX_PORT}/udp --permanent
 else
-    if ! sudo iptables -C INPUT -i hive1bm -p udp -m udp --dport 6230:${VBMC_MAX_PORT} -j ACCEPT 2>/dev/null ; then
-        sudo iptables -I INPUT -i hive1bm -p udp -m udp --dport 6230:${VBMC_MAX_PORT} -j ACCEPT
+    if ! sudo iptables -C INPUT -i ${HIVE1_BAREMETAL_NETWORK_NAME} -p udp -m udp --dport 6230:${VBMC_MAX_PORT} -j ACCEPT 2>/dev/null ; then
+        sudo iptables -I INPUT -i ${HIVE1_BAREMETAL_NETWORK_NAME} -p udp -m udp --dport 6230:${VBMC_MAX_PORT} -j ACCEPT
     fi
 fi
 
 # Configure DNS for hive1
 
 if [[ $EXTERNAL_SUBNET =~ .*:.* ]]; then
-    API_VIP=$(dig -t AAAA +noall +answer "api.${CLUSTER_DOMAIN}" @$(network_ip hive1bm) | awk '{print $NF}')
+    API_VIP=$(dig -t AAAA +noall +answer "api.${CLUSTER_DOMAIN}" @$(network_ip ${HIVE1_BAREMETAL_NETWORK_NAME}) | awk '{print $NF}')
 else
-    API_VIP=$(dig +noall +answer "api.${CLUSTER_DOMAIN}" @$(network_ip hive1bm) | awk '{print $NF}')
+    API_VIP=$(dig +noall +answer "api.${CLUSTER_DOMAIN}" @$(network_ip ${HIVE1_BAREMETAL_NETWORK_NAME}) | awk '{print $NF}')
 fi
 INGRESS_VIP=$(python -c "from ansible.plugins.filter import ipaddr; print(ipaddr.nthhost('"$EXTERNAL_SUBNET"', 4))")
 echo "address=/api.${CLUSTER_DOMAIN}/${API_VIP}" | sudo tee -a /etc/NetworkManager/dnsmasq.d/${CLUSTER_NAME}.conf
@@ -214,26 +214,26 @@ fi
 # Adding an IP address in the libvirt definition for this network results in
 # dnsmasq being run, we don't want that as we have our own dnsmasq, so set
 # the IP address here
-if [ ! -e /etc/sysconfig/network-scripts/ifcfg-hive2prov ] ; then
-    echo -e "DEVICE=hive2prov\nTYPE=Bridge\nONBOOT=yes\nNM_CONTROLLED=no\nBOOTPROTO=static\nIPADDR=$HIVE2_PROVISIONING_HOST_IP\nNETMASK=$HIVE2_PROVISIONING_NETMASK${ZONE}" | sudo dd of=/etc/sysconfig/network-scripts/ifcfg-hive2prov
+if [ ! -e /etc/sysconfig/network-scripts/ifcfg-${HIVE2_PROVISIONING_NETWORK_NAME} ] ; then
+    echo -e "DEVICE=${HIVE2_PROVISIONING_NETWORK_NAME}\nTYPE=Bridge\nONBOOT=yes\nNM_CONTROLLED=no\nBOOTPROTO=static\nIPADDR=$HIVE2_PROVISIONING_HOST_IP\nNETMASK=$HIVE2_PROVISIONING_NETMASK${ZONE}" | sudo dd of=/etc/sysconfig/network-scripts/ifcfg-${HIVE2_PROVISIONING_NETWORK_NAME}
 fi
-sudo ifdown hive2prov || true
-sudo ifup hive2prov
+sudo ifdown ${HIVE2_PROVISIONING_NETWORK_NAME} || true
+sudo ifup ${HIVE2_PROVISIONING_NETWORK_NAME}
 
-# Create the hive2bm bridge
-if [ ! -e /etc/sysconfig/network-scripts/ifcfg-hive2bm ] ; then
-    echo -e "DEVICE=hive2bm\nTYPE=Bridge\nONBOOT=yes\nNM_CONTROLLED=no${ZONE}" | sudo dd of=/etc/sysconfig/network-scripts/ifcfg-hive2bm
+# Create the bridge for the baremetal network
+if [ ! -e /etc/sysconfig/network-scripts/ifcfg-${HIVE2_BAREMETAL_NETWORK_NAME} ] ; then
+    echo -e "DEVICE=${HIVE2_BAREMETAL_NETWORK_NAME}\nTYPE=Bridge\nONBOOT=yes\nNM_CONTROLLED=no${ZONE}" | sudo dd of=/etc/sysconfig/network-scripts/ifcfg-${HIVE2_BAREMETAL_NETWORK_NAME}
 fi
-sudo ifdown hive2bm || true
-sudo ifup hive2bm
+sudo ifdown ${HIVE2_BAREMETAL_NETWORK_NAME} || true
+sudo ifup ${HIVE2_BAREMETAL_NETWORK_NAME}
 
 # If there were modifications to the /etc/sysconfig/network-scripts/ifcfg-*
 # files, it is required to enable the network service
 sudo systemctl enable network
 
 # restart the libvirt network so it applies an ip to the bridge
-sudo virsh net-destroy hive2bm
-sudo virsh net-start hive2bm
+sudo virsh net-destroy ${HIVE2_BAREMETAL_NETWORK_NAME}
+sudo virsh net-start ${HIVE2_BAREMETAL_NETWORK_NAME}
 
 # Add firewall rules to ensure the image caches can be reached on the host
 for PORT in 80 ${LOCAL_REGISTRY_PORT} ; do
@@ -241,11 +241,11 @@ for PORT in 80 ${LOCAL_REGISTRY_PORT} ; do
         sudo firewall-cmd --zone=libvirt --add-port=$PORT/tcp
         sudo firewall-cmd --zone=libvirt --add-port=$PORT/tcp --permanent
     else
-        if ! sudo iptables -C INPUT -i hive2prov -p tcp -m tcp --dport $PORT -j ACCEPT > /dev/null 2>&1; then
-            sudo iptables -I INPUT -i hive2prov -p tcp -m tcp --dport $PORT -j ACCEPT
+        if ! sudo iptables -C INPUT -i ${HIVE2_PROVISIONING_NETWORK_NAME} -p tcp -m tcp --dport $PORT -j ACCEPT > /dev/null 2>&1; then
+            sudo iptables -I INPUT -i ${HIVE2_PROVISIONING_NETWORK_NAME} -p tcp -m tcp --dport $PORT -j ACCEPT
         fi
-        if ! sudo iptables -C INPUT -i hive2bm -p tcp -m tcp --dport $PORT -j ACCEPT > /dev/null 2>&1; then
-            sudo iptables -I INPUT -i hive2bm -p tcp -m tcp --dport $PORT -j ACCEPT
+        if ! sudo iptables -C INPUT -i ${HIVE2_BAREMETAL_NETWORK_NAME} -p tcp -m tcp --dport $PORT -j ACCEPT > /dev/null 2>&1; then
+            sudo iptables -I INPUT -i ${HIVE2_BAREMETAL_NETWORK_NAME} -p tcp -m tcp --dport $PORT -j ACCEPT
         fi
     fi
 done
@@ -256,17 +256,17 @@ if [ "${RHEL8}" = "True" ] ; then
     sudo firewall-cmd --zone=libvirt --add-port=6230-${VBMC_MAX_PORT}/udp
     sudo firewall-cmd --zone=libvirt --add-port=6230-${VBMC_MAX_PORT}/udp --permanent
 else
-    if ! sudo iptables -C INPUT -i hive2bm -p udp -m udp --dport 6230:${VBMC_MAX_PORT} -j ACCEPT 2>/dev/null ; then
-        sudo iptables -I INPUT -i hive2bm -p udp -m udp --dport 6230:${VBMC_MAX_PORT} -j ACCEPT
+    if ! sudo iptables -C INPUT -i ${HIVE2_BAREMETAL_NETWORK_NAME} -p udp -m udp --dport 6230:${VBMC_MAX_PORT} -j ACCEPT 2>/dev/null ; then
+        sudo iptables -I INPUT -i ${HIVE2_BAREMETAL_NETWORK_NAME} -p udp -m udp --dport 6230:${VBMC_MAX_PORT} -j ACCEPT
     fi
 fi
 
 # Configure DNS for hive2
 
 if [[ $EXTERNAL_SUBNET =~ .*:.* ]]; then
-    API_VIP=$(dig -t AAAA +noall +answer "api.${CLUSTER_DOMAIN}" @$(network_ip hive2bm) | awk '{print $NF}')
+    API_VIP=$(dig -t AAAA +noall +answer "api.${CLUSTER_DOMAIN}" @$(network_ip ${HIVE2_BAREMETAL_NETWORK_NAME}) | awk '{print $NF}')
 else
-    API_VIP=$(dig +noall +answer "api.${CLUSTER_DOMAIN}" @$(network_ip hive2bm) | awk '{print $NF}')
+    API_VIP=$(dig +noall +answer "api.${CLUSTER_DOMAIN}" @$(network_ip ${HIVE2_BAREMETAL_NETWORK_NAME}) | awk '{print $NF}')
 fi
 INGRESS_VIP=$(python -c "from ansible.plugins.filter import ipaddr; print(ipaddr.nthhost('"$EXTERNAL_SUBNET"', 4))")
 echo "address=/api.${CLUSTER_DOMAIN}/${API_VIP}" | sudo tee -a /etc/NetworkManager/dnsmasq.d/${CLUSTER_NAME}.conf
