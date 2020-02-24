@@ -174,8 +174,8 @@ else
     API_VIP=$(dig +noall +answer "api.${CLUSTER_DOMAIN}" @$(network_ip hive1bm) | awk '{print $NF}')
 fi
 INGRESS_VIP=$(python -c "from ansible.plugins.filter import ipaddr; print(ipaddr.nthhost('"$EXTERNAL_SUBNET"', 4))")
-echo "address=/api.${CLUSTER_DOMAIN}/${API_VIP}" | sudo tee -a /etc/NetworkManager/dnsmasq.d/openshift.conf
-echo "address=/.apps.${CLUSTER_DOMAIN}/${INGRESS_VIP}" | sudo tee -a /etc/NetworkManager/dnsmasq.d/openshift.conf
+echo "address=/api.${CLUSTER_DOMAIN}/${API_VIP}" | sudo tee -a /etc/NetworkManager/dnsmasq.d/${CLUSTER_NAME}.conf
+echo "address=/.apps.${CLUSTER_DOMAIN}/${INGRESS_VIP}" | sudo tee -a /etc/NetworkManager/dnsmasq.d/${CLUSTER_NAME}.conf
 sudo systemctl reload NetworkManager
 
 generate_ocp_install_config ocp/hive1
@@ -269,8 +269,8 @@ else
     API_VIP=$(dig +noall +answer "api.${CLUSTER_DOMAIN}" @$(network_ip hive2bm) | awk '{print $NF}')
 fi
 INGRESS_VIP=$(python -c "from ansible.plugins.filter import ipaddr; print(ipaddr.nthhost('"$EXTERNAL_SUBNET"', 4))")
-echo "address=/api.${CLUSTER_DOMAIN}/${API_VIP}" | sudo tee -a /etc/NetworkManager/dnsmasq.d/openshift.conf
-echo "address=/.apps.${CLUSTER_DOMAIN}/${INGRESS_VIP}" | sudo tee -a /etc/NetworkManager/dnsmasq.d/openshift.conf
+echo "address=/api.${CLUSTER_DOMAIN}/${API_VIP}" | sudo tee -a /etc/NetworkManager/dnsmasq.d/${CLUSTER_NAME}.conf
+echo "address=/.apps.${CLUSTER_DOMAIN}/${INGRESS_VIP}" | sudo tee -a /etc/NetworkManager/dnsmasq.d/${CLUSTER_NAME}.conf
 sudo systemctl reload NetworkManager
 
 generate_ocp_install_config ocp/hive2
