@@ -253,8 +253,9 @@ if [ ! -d "$WORKING_DIR" ]; then
   sudo mkdir -p "$WORKING_DIR"
   sudo chown "${USER}:${USER}" "$WORKING_DIR"
   chmod 755 "$WORKING_DIR"
-  mkdir -p "$WORKING_DIR/$CLUSTER_NAME"
 fi
+
+mkdir -p "$WORKING_DIR/$CLUSTER_NAME"
 
 if [ ! -d "$IRONIC_IMAGES_DIR" ]; then
   echo "Creating Ironic Images Dir"
