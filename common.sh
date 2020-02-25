@@ -157,7 +157,7 @@ ROOT_DISK_NAME=${ROOT_DISK_NAME-"/dev/sda"}
 
 FILESYSTEM=${FILESYSTEM:="/"}
 
-export NODES_FILE=${NODES_FILE:-"${WORKING_DIR}/${CLUSTER_NAME}_ironic_nodes.json"}
+export NODES_FILE=${NODES_FILE:-"${WORKING_DIR}/${CLUSTER_NAME}/ironic_nodes.json"}
 NODES_PLATFORM=${NODES_PLATFORM:-"libvirt"}
 BAREMETALHOSTS_FILE=${BAREMETALHOSTS_FILE:-"${OCP_DIR}/baremetalhosts.json"}
 
@@ -253,6 +253,7 @@ if [ ! -d "$WORKING_DIR" ]; then
   sudo mkdir -p "$WORKING_DIR"
   sudo chown "${USER}:${USER}" "$WORKING_DIR"
   chmod 755 "$WORKING_DIR"
+  mkdir -p "$WORKING_DIR/$CLUSTER_NAME"
 fi
 
 if [ ! -d "$IRONIC_IMAGES_DIR" ]; then
