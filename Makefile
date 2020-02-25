@@ -33,3 +33,7 @@ host_cleanup:
 
 bell:
 	@echo "Done!" $$'\a'
+
+hive: requirements configure build_installer ironic
+	./hive_setup.sh
+	@echo "Done!" $$'\a'
